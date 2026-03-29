@@ -1,0 +1,15 @@
+{
+  "family": "myTaskDef-dev",
+  "containerDefinitions": [
+    {
+      "name": "myapp",
+      "image": "048119078172.dkr.ecr.ap-south-1.amazonaws.com/myapp:IMAGE_TAG",
+      "memory": 512,
+      "cpu": 256,
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 3000, "hostPort": 3000 }
+      ]
+    }
+  ]
+}
