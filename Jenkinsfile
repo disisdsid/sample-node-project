@@ -21,9 +21,12 @@ pipeline {
 
         stage('Login to ECR') {
             steps {
-                bat "aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin %ECR_REPO%"
+                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                    bat "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin %ECR_REPO%"
+                }
             }
         }
+
 
         stage('Push to ECR') {
             steps {
