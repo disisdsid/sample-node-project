@@ -21,12 +21,12 @@ pipeline {
 
         stage('Login to ECR') {
             steps {
-                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
-                    bat "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin %ECR_REPO%"
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'aws-creds']]) {
+                    bat "aws ecr get-login-password --region %AWS_DEFAULT_REGION% | docker login --username AWS --password-stdin %ECR_REPO%"
                 }
             }
         }
-
 
         stage('Push to ECR') {
             steps {
@@ -36,7 +36,10 @@ pipeline {
 
         stage('Deploy to ECS') {
             steps {
-                bat "aws ecs update-service --cluster myCluster --service myService --force-new-deployment --region %AWS_DEFAULT_REGION%"
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'my-aws-creds']]) {
+                    bat "aws ecs update-service --cluster myCluster --service myService --force-new-deployment --region %AWS_DEFAULT_REGION%"
+                }
             }
         }
     }
