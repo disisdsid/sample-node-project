@@ -1,4 +1,4 @@
-name: Deploy to ECS
+name: CI/CD Pipeline (Dev)
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      ECR_REPO: 048119078172.dkr.ecr.us-east-1.amazonaws.com/myapp
+      ECR_REPO: 048119078172.dkr.ecr.ap-south-1.amazonaws.com/myapp
       IMAGE_TAG: ${{ github.run_number }}
     steps:
       - name: Checkout code
@@ -31,10 +31,12 @@ jobs:
       - name: Push to ECR
         run: docker push $ECR_REPO:$IMAGE_TAG
 
-      - name: Update ECS Service
+      - name: Register new Task Definition & Deploy
         run: |
+          sed "s/IMAGE_TAG/${IMAGE_TAG}/g" taskdef.json > taskdef-updated.json
+          aws ecs register-task-definition --cli-input-json file://taskdef-updated.json
           aws ecs update-service \
-            --cluster myCluster \
-            --service myService \
-            --force-new-deployment \
+            --cluster myCluster-dev \
+            --service myService-dev \
+            --task-definition myTaskDef-dev \
             --region $AWS_REGION
