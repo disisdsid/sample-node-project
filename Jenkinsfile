@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = "us-east-1"
-        ECR_REPO = "048119078172.dkr.ecr.us-east-1.amazonaws.com/myapp"
+        ECR_REPO = "048119078172.dkr.ecr.ap-south-1.amazonaws.com/myapp"
     }
 
     stages {
@@ -34,11 +34,16 @@ pipeline {
             }
         }
 
-        stage('Deploy to ECS') {
+        stage('Register Task Definition & Deploy') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
                                   credentialsId: 'aws-creds']]) {
-                    bat "aws ecs update-service --cluster myCluster --service myService --force-new-deployment --region %AWS_DEFAULT_REGION%"
+                    bat """
+                    copy taskdef.json taskdef-updated.json
+                    powershell -Command "(Get-Content taskdef-updated.json) -replace 'IMAGE_TAG', 'build-%BUILD_NUMBER%' | Set-Content taskdef-updated.json"
+                    aws ecs register-task-definition --cli-input-json file://taskdef-updated.json
+                    aws ecs update-service --cluster myCluster-dev --service myService-dev --task-definition myTaskDef-dev --region %AWS_DEFAULT_REGION%
+                    """
                 }
             }
         }
