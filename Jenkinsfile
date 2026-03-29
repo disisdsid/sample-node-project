@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = "us-east-1"
-        ECR_REPO = "048119078172.dkr.ecr.ap-south-1.amazonaws.com/myapp"
+        ECR_REPO = "048119078172.dkr.ecr.us-east-1.amazonaws.com/myapp"
     }
 
     stages {
