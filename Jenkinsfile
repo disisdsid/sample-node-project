@@ -37,7 +37,7 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                                  credentialsId: 'my-aws-creds']]) {
+                                  credentialsId: 'aws-creds']]) {
                     bat "aws ecs update-service --cluster myCluster --service myService --force-new-deployment --region %AWS_DEFAULT_REGION%"
                 }
             }
