@@ -1,14 +1,20 @@
 {
   "family": "myTaskDef-dev",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::048119078172:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "myapp",
-      "image": "048119078172.dkr.ecr.ap-south-1.amazonaws.com/myapp:IMAGE_TAG",
-      "memory": 512,
-      "cpu": 256,
+      "image": "048119078172.dkr.ecr.us-east-1.amazonaws.com/myapp:IMAGE_TAG",
       "essential": true,
       "portMappings": [
-        { "containerPort": 3000, "hostPort": 3000 }
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
       ]
     }
   ]
