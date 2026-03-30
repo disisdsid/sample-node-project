@@ -1,0 +1,42 @@
+name: CI/CD Pipeline (Dev)
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPO: 048119078172.dkr.ecr.us-east-1.amazonaws.com/myapp
+      IMAGE_TAG: ${{ github.run_number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Build Docker image
+        run: docker build -t $ECR_REPO:$IMAGE_TAG .
+
+      - name: Login to ECR
+        run: aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+
+      - name: Push to ECR
+        run: docker push $ECR_REPO:$IMAGE_TAG
+
+      - name: Register new Task Definition & Deploy
+        run: |
+          sed "s/IMAGE_TAG/${IMAGE_TAG}/g" taskdef.json > taskdef-updated.json
+          aws ecs register-task-definition --cli-input-json file://taskdef-updated.json
+          aws ecs update-service \
+            --cluster myCluster-dev \
+            --service myService-dev \
+            --task-definition myTaskDef-dev \
+            --region $AWS_REGION
